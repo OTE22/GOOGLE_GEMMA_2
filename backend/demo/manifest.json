@@ -1,0 +1,32 @@
+[
+  {
+    "file": "workplace-safety.pdf"
+  },
+  {
+    "file": "company-vehicles.pdf"
+  },
+  {
+    "file": "protective-equipment.png",
+    "evidence": "Original illustration: warehouse worker wearing a yellow hard hat and high visibility vest beside storage shelves."
+  },
+  {
+    "file": "company-vehicle.png",
+    "evidence": "Original illustration: a blue Northstar company delivery truck parked for daily inspection."
+  },
+  {
+    "file": "employee-training.png",
+    "evidence": "Original illustration: three employees seated in a training room facing a workplace safety training board."
+  },
+  {
+    "file": "safety-briefing.wav",
+    "evidence": "Verified synthesis script: Welcome to the workplace safety briefing. Wear your hard hat and high visibility vest in the loading area. Check protective equipment before every shift. Report hazards to your supervisor. Employee safety training is held every Monday."
+  },
+  {
+    "file": "vehicle-training.wav",
+    "evidence": "Verified synthesis script: Company vehicle training begins with a daily inspection. Check the tires, mirrors, lights, and brakes. Wear your seat belt. Only trained employees may drive company vehicles. New drivers must complete supervised training before their first journey."
+  },
+  {
+    "file": "safety-training.mp4",
+    "evidence": "Generated slideshow: 0\u20134 seconds warehouse worker in protective equipment; 4\u20138 seconds company delivery truck; 8\u201312 seconds employees in safety training. Audio uses the safety briefing synthesis script."
+  }
+]

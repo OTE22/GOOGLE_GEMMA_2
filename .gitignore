@@ -1,0 +1,11 @@
+.uv-cache/
+backend/.venv/
+backend/.venv-tests/
+**/__pycache__/
+.pytest_cache/
+data/
+.env
+frontend/node_modules/
+frontend/dist/
+*.log
+.docker-local/
