@@ -3,6 +3,8 @@ import numpy as np
 import soundfile as sf
 import pymupdf
 from app.ingestion import parts, duration
+from app.embedding import decoded_video, EmbeddingService
+from app.config import Settings
 
 
 def test_audio_preprocessing_normalizes_and_preserves_timestamps(tmp_path):
@@ -33,3 +35,24 @@ def test_generated_demo_contains_actual_readable_and_playable_content(tmp_path):
     clips = list(parts(root / "safety-training.mp4", tmp_path))
     assert len(clips) == 1
     assert clips[0][1] == {"start_time": 0., "end_time": 12.}
+    video = decoded_video(root / "safety-training.mp4")
+    assert video["array"].shape == (12, 600, 960, 3)
+    assert video["video_metadata"]["fps"] == 24
+    assert video["video_metadata"]["frames_indices"] == list(range(0, 288, 24))
+
+
+def test_service_passes_native_media_arrays_without_text_prompts():
+    class SpyModel:
+        def encode(self, value, **kwargs):
+            self.value, self.kwargs = value, kwargs
+            return np.ones(768)
+    engine = EmbeddingService(Settings())
+    engine.model = SpyModel()
+    root = Path(__file__).resolve().parents[1] / "demo"
+    engine.embed_audio(root / "safety-briefing.wav")
+    assert engine.model.value["audio"]["sampling_rate"] == 16000
+    assert "prompt_name" not in engine.model.kwargs
+    engine.embed_video(root / "safety-training.mp4")
+    assert engine.model.value["video"]["array"].shape[0] == 12
+    assert engine.model.kwargs["processing_kwargs"] == {"video": {"do_sample_frames": False}}
+    assert "prompt_name" not in engine.model.kwargs

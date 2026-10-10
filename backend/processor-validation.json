@@ -1,0 +1,93 @@
+{
+  "processor": "EmbeddingGemma2Processor",
+  "modalities": {
+    "text": {
+      "tokens": 6,
+      "shapes": {
+        "input_ids": [
+          1,
+          6
+        ],
+        "attention_mask": [
+          1,
+          6
+        ]
+      },
+      "seconds": 0.0055508999939775094
+    },
+    "image": {
+      "tokens": 277,
+      "shapes": {
+        "input_ids": [
+          1,
+          277
+        ],
+        "attention_mask": [
+          1,
+          277
+        ],
+        "pixel_values": [
+          1,
+          2520,
+          768
+        ],
+        "image_position_ids": [
+          1,
+          2520,
+          2
+        ]
+      },
+      "seconds": 0.01894460000039544
+    },
+    "audio": {
+      "tokens": 421,
+      "shapes": {
+        "input_ids": [
+          1,
+          421
+        ],
+        "attention_mask": [
+          1,
+          421
+        ],
+        "input_features": [
+          1,
+          1666,
+          128
+        ],
+        "input_features_mask": [
+          1,
+          1666
+        ]
+      },
+      "seconds": 0.03179820000514155
+    },
+    "video": {
+      "tokens": 1538,
+      "shapes": {
+        "input_ids": [
+          1,
+          1538
+        ],
+        "attention_mask": [
+          1,
+          1538
+        ],
+        "pixel_values_videos": [
+          12,
+          1260,
+          768
+        ],
+        "video_position_ids": [
+          12,
+          1260,
+          2
+        ],
+        "num_frames_per_video": [
+          1
+        ]
+      },
+      "seconds": 0.16719080000621034
+    }
+  }
+}

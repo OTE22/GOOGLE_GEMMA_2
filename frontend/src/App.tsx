@@ -823,6 +823,27 @@ export default function App() {
                 <h2>Indexed files</h2>
                 <span className="pill">{files.length} originals</span>
               </div>
+              {files.length > 0 && (
+                <section className="panel try-card">
+                  <h2>Try your connected knowledge</h2>
+                  {examples.map((text) => (
+                    <button
+                      className="example"
+                      key={text}
+                      onClick={() => {
+                        setQuery(text);
+                        setQueryType("text");
+                        setFilter("");
+                        setPage(2);
+                      }}
+                    >
+                      <Search size={15} />
+                      {text}
+                      <ArrowRight size={14} />
+                    </button>
+                  ))}
+                </section>
+              )}
               <div className="results-grid">
                 {files.map((f) => (
                   <ResultCard key={f.url} result={f} />

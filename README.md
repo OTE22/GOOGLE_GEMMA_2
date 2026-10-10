@@ -10,7 +10,6 @@ From the project root in PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
-$env:UV_CACHE_DIR="$PWD/.uv-cache"
 cd backend
 uv sync --frozen
 uv run python -m app.demo
@@ -40,13 +39,13 @@ docker compose up --build -d
 
 The backend image installs dependencies with `uv sync --frozen --no-dev` and executes through `uv run --frozen`. Three named volumes persist vectors, originals, and weights across restarts. Generated demo media is included in the image. To regenerate inside the container: `docker compose exec backend uv run --frozen python -m app.demo`.
 
-CPU fallback works with the base Compose configuration. For CUDA, install the NVIDIA driver and NVIDIA Container Toolkit, use a CUDA-enabled PyTorch build compatible with the host, and run:
+The base Compose configuration selects CPU when CUDA is unavailable. For CUDA, install the NVIDIA driver and NVIDIA Container Toolkit, use a CUDA-enabled PyTorch build compatible with the host, and run:
 
 ```powershell
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build -d
 ```
 
-Check `/api/model/status` for `device: cuda`. If the locked PyTorch build lacks CUDA on your platform, choose its CUDA-enabled distribution with `uv add torch --index <official-compatible-pytorch-index>`, regenerate the lock, and rebuild. Do not replace dependencies outside uv. Linux PyTorch distributions normally supply CUDA runtime dependencies; Windows distributions can differ. No float16 inference is used: bfloat16 on supporting CUDA hardware, float32 otherwise.
+Check `/api/model/status` for `device: cuda`. If the locked PyTorch build lacks CUDA on your platform, select the compatible distribution using the [official PyTorch installer selector](https://pytorch.org/get-started/locally/) and apply its torch/torchvision versions and index through `uv add`, regenerate the lock, and rebuild. Do not replace dependencies outside uv. Linux PyTorch distributions normally supply CUDA runtime dependencies; Windows distributions can differ. No float16 inference is used: bfloat16 on supporting CUDA hardware, float32 otherwise. GPU execution has not been verified on this CPU host.
 
 ## Native API and scientific choices
 
@@ -60,7 +59,7 @@ Verified references on October 10, 2026:
 
 The locked stack includes Sentence Transformers 6.1+ and Transformers 5.19+. Model input dictionaries use `image`, `audio`, and `video`; text uses `SearchQuery`, `Document`, or symmetric `SentenceSimilarity`. All embeddings are validated for dimension, finiteness and nonzero norm, then normalized. The complete vision and audio encoders are checked at load time. Parameter counts and device are measured after loading, rather than shown as measurements before loading.
 
-Text is split into overlapping passages (1400 characters, 200 overlap), with PDF page references. Audio is converted to mono 16 kHz and split at 60 seconds. Video is split at 30 seconds and sampled to one frame per second, comfortably below the default vision token budget. Video embeddings represent visual frames; audio is a separate native input. Original files retain their audio. Media result timestamps link to the original file. Scanned PDF OCR is not included.
+Text is split into overlapping passages (1400 characters, 200 overlap), with PDF page references. Audio is converted to mono 16 kHz and split at 60 seconds, then supplied as actual waveform arrays. Video is split at 30 seconds; PyAV supplies one RGB frame per second plus original frame metadata to the model's native video pipeline. Further processor sampling is disabled. This documented frame-array input avoids the platform-specific TorchCodec/FFmpeg shared-library requirement for path decoding. Video embeddings represent visual frames; audio is a separate native input. Originals retain their audio. Media timestamps link to the original file. Scanned PDF OCR is not included.
 
 Chroma collection: `embeddinggemma2_multimodal`, cosine distance, 768 dimensions. Original bytes live outside Chroma; SHA-256 hashes produce stable file and chunk IDs. Re-uploading identical content upserts those IDs. Chroma omits unavailable metadata fields because it does not accept null metadata; clients can interpret missing page/time fields as null. Query media is saved locally but is not automatically indexed. Failed-upload originals remain available on disk for troubleshooting.
 
@@ -79,12 +78,13 @@ Demo images are original illustrations. Audio is actual synthesized speech with 
 ```powershell
 cd backend
 uv run pytest -q
+uv run python -m app.validate_processors
 uv run python -m app.validate
 cd ../frontend
 npm run build
 npm run lint
 ```
 
-The unit tests use a clearly identified test embedding engine to verify API behavior and storage, never as an application fallback. `app.validate` loads the actual model, ingests all eight demo files, checks a shared multimodal collection, and writes actual search rankings and timings to `validation-results.json`. It also runs image-to-text and audio-to-text retrieval. A valid OpenRouter key is required to validate live chat. See `VALIDATION.md` for actual execution results and remaining limitations.
+The unit tests use a clearly identified test embedding engine to verify API behavior and storage, never as an application fallback. `app.validate_processors` checks actual native preprocessing using cached official processor files; it does not load the encoders. `app.validate` loads the actual model, ingests all eight demo files, checks a shared multimodal collection, and writes actual search rankings and timings to `validation-results.json`. It also runs image-to-text and audio-to-text retrieval. A valid OpenRouter key is required to validate live chat. See `VALIDATION.md` for actual execution results and remaining limitations.
 
 The printable guide is at `/guide.html`, with five fixed A4 sheets, explicit page breaks, and no trailing sixth page. Print at A4, 100% scale, browser headers/footers off.
