@@ -37,15 +37,9 @@ Copy-Item .env.example .env
 docker compose up --build -d
 ```
 
-The backend image installs dependencies with `uv sync --frozen --no-dev` and executes through `uv run --frozen`. Three named volumes persist vectors, originals, and weights across restarts. Generated demo media is included in the image. To regenerate inside the container: `docker compose exec backend uv run --frozen python -m app.demo`.
+The backend image installs dependencies with `uv sync --frozen --no-dev` and executes through `uv run --frozen`. Docker caches uv and npm downloads across rebuilds; Debian dependencies use HTTPS with bounded retries. Three named volumes persist vectors, originals, and weights across restarts. Generated demo media is included in the image. To regenerate inside the container: `docker compose exec backend uv run --frozen python -m app.demo`.
 
-The base Compose configuration selects CPU when CUDA is unavailable. For CUDA, install the NVIDIA driver and NVIDIA Container Toolkit, use a CUDA-enabled PyTorch build compatible with the host, and run:
-
-```powershell
-docker compose -f docker-compose.yml -f docker-compose.gpu.yml up --build -d
-```
-
-Check `/api/model/status` for `device: cuda`. If the locked PyTorch build lacks CUDA on your platform, select the compatible distribution using the [official PyTorch installer selector](https://pytorch.org/get-started/locally/) and apply its torch/torchvision versions and index through `uv add`, regenerate the lock, and rebuild. Do not replace dependencies outside uv. Linux PyTorch distributions normally supply CUDA runtime dependencies; Windows distributions can differ. No float16 inference is used: bfloat16 on supporting CUDA hardware, float32 otherwise. GPU execution has not been verified on this CPU host.
+This deployment is CPU-only. Torch and torchvision use the explicit official `https://download.pytorch.org/whl/cpu` index in `pyproject.toml` and `uv.lock`. Docker and the default Compose service enforce `EMBEDDING_DEVICE=cpu`; inference uses float32. Use the base Compose file alone. The retained GPU override is unused and incompatible with these CPU-only wheels.
 
 ## Native API and scientific choices
 

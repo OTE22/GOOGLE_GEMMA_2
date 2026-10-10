@@ -13,14 +13,16 @@
 - Frontend and guide return HTTP 200. Guide has exactly five A4 sheet sections and explicit page breaks, including no trailing break after sheet five.
 - CPU and GPU Compose configurations validate. Docker engine access works. The frontend Docker image built successfully with `npm ci`, TypeScript checking, Vite, and Nginx.
 - Verified the official model card, Transformers API, Sentence Transformers input formats, and published prompt configuration. The model's Hub API confirms `gated: false`. Exact model ID is enforced; no substitute embedding models are used.
+- After the user configured `.env`, a live OpenRouter completion request succeeded through `openrouter/free`, routed to `nvidia/nemotron-3.5-lightning:free`. The deliberately short response budget truncated the returned content; this verifies authentication and provider connectivity only. The local backend was restarted to read the key. Credentials were not printed or committed.
+- The user requested CPU-only operation. `uv add torch torchvision --index pytorch-cpu=https://download.pytorch.org/whl/cpu` configured the official CPU source, marked explicit so other dependencies remain on PyPI. `uv lock` resolved 153 packages and removed all CUDA, NVIDIA, and Triton dependencies. The interrupted Docker build had not reached Python dependency installation. Docker and base Compose explicitly select CPU. The historical GPU override is retained unused; it is incompatible with the CPU-only wheels.
 
 ## Not yet verified
 
 - Native model loading. An actual cached integration attempt (`HF_HUB_OFFLINE=1 uv run --frozen python -m app.validate`) failed because the checkpoint weights are not yet cached. The complete Python environment is installed; this failure is specifically the missing model weights.
 - Real 768-dimensional embeddings for every modality, real mixed-modality ingestion, semantic ranking, image/audio-to-text retrieval, and live similarity measurements. The integration command is `uv run python -m app.validate`; these must not be inferred from the unit tests.
 - Model weights download: configuration files and both tokenizer files are cached (12 of 13 requested files). Large-file HTTPS requests repeatedly timed out during TLS handshakes; the supported Xet transport still has an incomplete weights download. No certificate checks were disabled.
-- GPU inference and complete backend Docker image/runtime. Docker source uses `uv sync --frozen --no-dev`; this has not yet been verified by running the full backend image.
-- Live OpenRouter completion: no valid API key was provided. Tests verify graph behavior with a clearly identified client test double. Local search has no dependency on OpenRouter.
+- Complete CPU backend Docker image/runtime. Docker source uses `uv sync --frozen --no-dev`; the CPU-only build is in progress. GPU operation is excluded by the user's instruction.
+- End-to-end live RAG chat remains unverified because native retrieval requires the incomplete embedding checkpoint. Provider connectivity is verified separately above. Tests verify graph behavior with a clearly identified client test double. Local search has no dependency on OpenRouter.
 - Visual browser testing and physical print pagination: this session exposes no browser surfaces (`apps: []`, `browsers: []`). Automated DOM/component, type, HTTP, and print-structure checks passed, but are not a substitute for a visual browser/print check.
 
 ## Reproduce
